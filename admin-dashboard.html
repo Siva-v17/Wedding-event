@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planner Dashboard | Stackly Weddings</title>
+<meta name="description" content="Internal planner dashboard for managing bookings, clients, vendors and events at Stackly Weddings.">
+<link rel="icon" href="./stackly.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/EasePack.min.js"></script>
+<style>
+    :root{
+      --ivory:#FBF5EF; --ivory-deep:#F2E7D8; --paper:#FFFDFB;
+      --charcoal:#241F1C; --charcoal-soft:#4A423C; --charcoal-fade:#8A8078;
+      --rose:#B8697A; --rose-deep:#8C4A5B; --rose-pale:#E9CED4;
+      --gold:#C6A15B; --gold-pale:#E7D6AE; --sage:#7C8A6E;
+      --line:#E4D6C4;
+      --radius-arch: 260px 260px 12px 12px;
+      --radius-arch-sm: 140px 140px 8px 8px;
+      --ease: cubic-bezier(.22,1,.36,1);
+      --shadow: 0 30px 60px -25px rgba(36,31,28,.35);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:'Jost',sans-serif; background:var(--ivory); color:var(--charcoal);
+      overflow-x:hidden; font-weight:400; line-height:1.6; font-size:16px;
+      -webkit-font-smoothing:antialiased;
+    }
+    ::selection{background:var(--rose); color:var(--paper);}
+    img{max-width:100%; display:block;}
+    a{color:inherit; text-decoration:none;}
+    ul{list-style:none;}
+    button{font-family:inherit; cursor:pointer; border:none; background:none;}
+    input,textarea,select{font-family:inherit; font-size:1rem;}
+    .container{width:min(1240px,92%); margin:0 auto;}
+    .container-wide{width:min(1440px,94%); margin:0 auto;}
+    h1,h2,h3,h4{font-family:'Cormorant Garamond',serif; font-weight:600; color:var(--charcoal); line-height:1.08; letter-spacing:.2px;}
+    h1{font-size:clamp(3rem,7vw,6.4rem); font-weight:600;}
+    h2{font-size:clamp(2.2rem,4.4vw,3.6rem);}
+    h3{font-size:clamp(1.5rem,2.6vw,2rem);}
+    p{color:var(--charcoal-soft);}
+    .eyebrow{font-family:'Jost',sans-serif; font-size:.8rem; letter-spacing:.14em; color:var(--rose-deep); font-weight:500; display:inline-flex; align-items:center; gap:.6rem;}
+    .eyebrow::before{content:''; width:26px; height:1px; background:var(--rose-deep);}
+    .amp{font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--rose);}
+
+    /* ---------- buttons ---------- */
+    .btn{position:relative; display:inline-flex; align-items:center; gap:.6rem; padding:1.05rem 2.2rem; border-radius:100px; font-size:.92rem; font-weight:500; letter-spacing:.02em; transition:transform .5s var(--ease), box-shadow .5s var(--ease); isolation:isolate; overflow:hidden;}
+    .btn-primary{background:var(--charcoal); color:var(--ivory);}
+    .btn-primary:hover{transform:translateY(-3px); box-shadow:0 18px 30px -12px rgba(36,31,28,.45);}
+    .btn-outline{border:1px solid var(--charcoal-soft); color:var(--charcoal);}
+    .btn-outline:hover{background:var(--charcoal); color:var(--ivory); transform:translateY(-3px);}
+    .btn-rose{background:var(--rose); color:var(--paper);}
+    .btn-rose:hover{transform:translateY(-3px); box-shadow:0 18px 30px -12px rgba(140,74,91,.5);}
+    .btn-ghost{color:var(--charcoal); font-size:.85rem; letter-spacing:.08em; border-bottom:1px solid var(--charcoal-soft); padding-bottom:.2rem; border-radius:0;}
+    .btn-sm{padding:.75rem 1.5rem; font-size:.82rem;}
+    .btn svg{width:16px; height:16px; transition:transform .4s var(--ease);}
+    .btn:hover svg{transform:translate(3px,-3px);}
+
+    /* ---------- cursor / grain / bg blobs ---------- */
+    .bg-blobs{position:fixed; inset:0; z-index:-2; overflow:hidden; pointer-events:none;}
+    .blob{position:absolute; border-radius:50%; filter:blur(90px); opacity:.35;}
+    .blob-1{width:46vw; height:46vw; background:var(--rose-pale); top:-14vw; left:-12vw;}
+    .blob-2{width:36vw; height:36vw; background:var(--gold-pale); bottom:-10vw; right:-8vw;}
+    .blob-3{width:26vw; height:26vw; background:var(--sage); opacity:.16; top:40%; left:60%;}
+    .grain{position:fixed; inset:0; z-index:9997; pointer-events:none; opacity:.045; mix-blend-mode:multiply;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+    .petal{position:fixed; z-index:-1; pointer-events:none; opacity:.5;}
+
+    /* ---------- preloader ---------- */
+    .preloader{position:fixed; inset:0; background:var(--charcoal); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem;}
+    .preloader img{width:64px; filter:brightness(0) invert(1); opacity:.92;}
+    .preloader .pl-bar{width:220px; height:1px; background:rgba(255,255,255,.18); position:relative; overflow:hidden;}
+    .preloader .pl-fill{position:absolute; inset:0; width:0%; background:var(--rose-pale);}
+    .preloader .pl-label{font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--ivory); font-size:1.1rem; letter-spacing:.04em;}
+
+    /* ---------- nav ---------- */
+    header.site-nav{position:fixed; top:0; left:0; width:100%; z-index:900; padding:1.6rem 0; transition:padding .4s var(--ease), background .4s var(--ease), box-shadow .4s var(--ease);}
+    header.site-nav.scrolled{padding:.9rem 0; background:rgba(251,245,239,.86); backdrop-filter:blur(14px); box-shadow:0 10px 30px -20px rgba(36,31,28,.4);}
+    .nav-inner{display:flex; align-items:center; justify-content:space-between; gap:2rem;}
+    .logo{display:flex; align-items:center; gap:.6rem; font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600;}
+    .logo img{height:70px; width:auto;}
+    .nav-links{display:flex; align-items:center; gap:2.3rem;}
+    .nav-links a{font-size:.88rem; letter-spacing:.03em; position:relative; padding:.3rem 0; color:var(--charcoal-soft);}
+    .nav-links a::after{content:''; position:absolute; bottom:0; left:0; width:0; height:1px; background:var(--rose-deep); transition:width .4s var(--ease);}
+    .nav-links a:hover::after, .nav-links a.active::after{width:100%;}
+    .nav-links a.active{color:var(--charcoal);}
+    .nav-cta{display:flex; align-items:center; gap:1rem;}
+    .nav-toggle{display:none; flex-direction:column; gap:5px; width:26px; z-index:1200;}
+    .nav-toggle span{height:1px; width:100%; background:var(--charcoal); transition:transform .35s var(--ease), opacity .3s;}
+    .mobile-panel{position:fixed; inset:0; background:var(--ivory); z-index:1100; display:flex; flex-direction:column; justify-content:center; padding:3rem 8%; gap:1.6rem; transform:translateY(-100%); transition:transform .55s var(--ease); }
+    .mobile-panel.open{transform:translateY(0);}
+    .mobile-panel a{font-family:'Cormorant Garamond',serif; font-size:2.4rem; color:var(--charcoal);}
+
+    /* ---------- marquee ---------- */
+    .marquee-wrap{overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:1.1rem 0; background:var(--paper);}
+    .marquee-track{display:flex; width:max-content; gap:4rem; animation:marquee 34s linear infinite;}
+    .marquee-track span{font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.6rem; color:var(--charcoal-fade); white-space:nowrap; display:flex; align-items:center; gap:1rem;}
+    .marquee-track span::after{content:'✦'; color:var(--gold); font-style:normal; font-size:1rem;}
+    @keyframes marquee{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+    /* ---------- section basics ---------- */
+    section{position:relative; padding:3.2rem 0;}
+    .section-head{max-width:640px; margin-bottom:1.8rem;}
+    .section-head.center{margin-left:auto; margin-right:auto; text-align:center;}
+    .section-head h2{margin-top:.9rem;}
+    .section-head p{margin-top:1.1rem; font-size:1.05rem;}
+    .divider{display:flex; align-items:center; justify-content:center; gap:1rem; margin:0 auto 2.4rem; color:var(--gold);}
+    .divider::before,.divider::after{content:''; width:60px; height:1px; background:var(--line);}
+
+    /* ---------- arch frame (signature motif) ---------- */
+    .arch-frame{border-radius:var(--radius-arch); overflow:hidden; position:relative; box-shadow:var(--shadow);}
+    .arch-frame img{width:100%; height:100%; object-fit:cover; transform:scale(1.12);}
+    .arch-frame-sm{border-radius:var(--radius-arch-sm); overflow:hidden; position:relative;}
+
+    /* ---------- footer ---------- */
+    footer{background:var(--charcoal); color:var(--ivory); padding:5.5rem 0 2rem; position:relative; overflow:hidden;}
+    footer h4{color:var(--ivory); font-size:1rem; font-family:'Jost',sans-serif; font-weight:500; letter-spacing:.04em; margin-bottom:1.3rem;}
+    footer .f-logo{display:flex; align-items:center; gap:.6rem; font-family:'Cormorant Garamond',serif; font-size:1.7rem; color:var(--ivory); margin-bottom:1rem;}
+    footer .f-logo img{height:36px; filter:brightness(0) invert(1);}
+    footer p{color:#C7BEB5; font-size:.92rem;}
+    footer a{color:#C7BEB5; font-size:.92rem; transition:color .3s;}
+    footer a:hover{color:var(--rose-pale);}
+    .footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1.2fr; gap:3rem; padding-bottom:3.6rem; border-bottom:1px solid rgba(255,255,255,.12);}
+    .footer-links li{margin-bottom:.7rem;}
+    .f-newsletter{display:flex; border-bottom:1px solid rgba(255,255,255,.3); padding-bottom:.7rem; margin-top:1rem;}
+    .f-newsletter input{background:none; border:none; color:var(--ivory); flex:1; outline:none;}
+    .f-newsletter input::placeholder{color:#8b8178;}
+    .f-newsletter button{color:var(--rose-pale); font-size:.85rem; letter-spacing:.05em;}
+    .footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:2rem; flex-wrap:wrap; gap:1rem;}
+    .footer-bottom p{font-size:.8rem; color:#948A80;}
+    .socials{display:flex; gap:1rem;}
+    .socials a{width:38px; height:38px; border:1px solid rgba(255,255,255,.2); border-radius:50%; display:flex; align-items:center; justify-content:center;}
+    .socials a:hover{background:var(--rose); border-color:var(--rose);}
+    .socials svg{width:15px; height:15px;}
+
+    /* ---------- reveal utility ---------- */
+    .reveal{opacity:0; transform:translateY(36px);}
+    .reveal-img{clip-path:inset(0 0 100% 0);}
+
+    /* ---------- cards ---------- */
+    .tag-chip{display:inline-block; padding:.4rem 1rem; border:1px solid var(--line); border-radius:100px; font-size:.78rem; letter-spacing:.03em; color:var(--charcoal-soft); background:var(--paper);}
+    .tag-chip.active, .tag-chip:hover{background:var(--charcoal); color:var(--ivory); border-color:var(--charcoal);}
+
+    /* scrollbar */
+    ::-webkit-scrollbar{width:9px;} ::-webkit-scrollbar-track{background:var(--ivory);} ::-webkit-scrollbar-thumb{background:var(--rose-pale); border-radius:10px;}
+
+
+    body.dash-body{background:var(--ivory-deep);}
+    /* .dash-wrap is a plain block, not a grid: the sidebar is taken out of
+       flow with position:fixed (see .sidebar below) and .dash-main is
+       pushed over with margin-left instead. This avoids position:sticky,
+       which silently breaks (collapses to its content height) whenever any
+       ancestor up to <html> has overflow set to something other than
+       visible — which our overflow-x:hidden fix on html/body does. Fixed
+       positioning has no such restriction. */
+    .dash-wrap{min-height:100vh;}
+    .sidebar{background:var(--charcoal); color:var(--ivory); padding:2rem 1.4rem; position:fixed; top:0; left:0; width:264px; height:100vh; display:flex; flex-direction:column; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.25) transparent; z-index:1000;}
+    .sidebar::-webkit-scrollbar{width:6px;}
+    .sidebar::-webkit-scrollbar-track{background:transparent;}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2); border-radius:10px;}
+    .sidebar::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35);}
+    .sidebar .logo{color:var(--ivory); margin-bottom:0; padding:0 .6rem;}
+    .sidebar .logo img{filter:brightness(0) invert(1);}
+    .sidebar-head{margin-bottom:1.4rem;}
+    .side-nav{flex:1; display:flex; flex-direction:column; gap:.2rem; margin-top:1.4rem;}
+    .side-nav a{display:flex; align-items:center; gap:.85rem; padding:.8rem .9rem; border-radius:12px; font-size:.9rem; color:#B7ACA2; transition:all .25s;}
+    .side-nav a svg{width:18px; height:18px; flex-shrink:0;}
+    .side-nav a:hover{background:rgba(255,255,255,.06); color:var(--ivory);}
+    .side-nav a.active{background:var(--rose); color:#fff;}
+    .side-nav .side-label{font-size:.7rem; letter-spacing:.1em; color:#7A6F65; margin:1.2rem .9rem .3rem;}
+    .side-foot{border-top:1px solid rgba(255,255,255,.12); padding-top:1.2rem; display:flex; align-items:center; gap:.8rem;}
+    .side-foot img{width:38px; height:38px; border-radius:50%; object-fit:cover;}
+    .side-foot b{font-size:.85rem; display:block;} .side-foot small{color:#9c9187; font-size:.75rem;}
+    .side-foot .side-email{display:block; color:#8b8178; font-size:.7rem; margin-top:.15rem; word-break:break-all;}
+
+    .dash-main{padding:2rem 2.6rem 4rem; margin-left:264px;}
+    .dash-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:2.2rem; gap:1rem; flex-wrap:wrap;}
+    .dash-search{display:flex; align-items:center; gap:.6rem; background:var(--paper); border:1px solid var(--line); border-radius:100px; padding:.7rem 1.2rem; min-width:280px;}
+    .dash-search input{border:none; background:none; flex:1; outline:none;}
+    .dash-search svg{width:16px; height:16px; color:var(--charcoal-fade);}
+    .dash-actions{display:flex; align-items:center; gap:1.1rem;}
+    .icon-btn{width:42px; height:42px; border-radius:50%; background:var(--paper); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative;}
+    .icon-btn svg{width:18px; height:18px;}
+    .icon-btn .dot{position:absolute; top:8px; right:9px; width:7px; height:7px; border-radius:50%; background:var(--rose);}
+
+    .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1.4rem; margin-bottom:2.2rem;}
+    .stat-card{background:var(--paper); border:1px solid var(--line); border-radius:22px; padding:1.7rem; opacity:0; transform:translateY(24px);}
+    .stat-card .st-top{display:flex; justify-content:space-between; align-items:flex-start;}
+    .stat-card .st-icon{width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center;}
+    .stat-card .st-icon svg{width:18px; height:18px;}
+    .stat-card .num{font-family:'Cormorant Garamond',serif; font-size:2.2rem; margin:1rem 0 .2rem;}
+    .stat-card .lbl{font-size:.82rem; color:var(--charcoal-fade);}
+    .stat-card .delta{font-size:.76rem; color:var(--sage); margin-top:.4rem; display:inline-block;}
+
+    .dash-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:1.4rem; margin-bottom:1.4rem;}
+    .panel{background:var(--paper); border:1px solid var(--line); border-radius:22px; padding:1.8rem; opacity:0; transform:translateY(24px);}
+    .panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem;}
+    .panel-head h3{font-size:1.2rem;}
+    .panel-head a{font-size:.8rem; color:var(--rose-deep);}
+    .chart-bars{display:flex; align-items:flex-end; gap:.9rem; height:200px; padding-top:1rem;}
+    .chart-bars .bar{flex:1; background:linear-gradient(to top, var(--rose), var(--rose-pale)); border-radius:8px 8px 0 0; position:relative; height:0;}
+    .chart-bars .bar span{position:absolute; bottom:-1.6rem; left:0; right:0; text-align:center; font-size:.72rem; color:var(--charcoal-fade);}
+
+    table{width:100%; border-collapse:collapse;}
+    th{text-align:left; font-size:.74rem; letter-spacing:.05em; color:var(--charcoal-fade); font-weight:500; padding-bottom:.9rem; border-bottom:1px solid var(--line);}
+    td{padding:1rem 0; border-bottom:1px solid var(--line); font-size:.88rem;}
+    tr:last-child td{border-bottom:none;}
+    .td-couple{display:flex; align-items:center; gap:.8rem;}
+    .td-couple img{width:34px; height:34px; border-radius:50%; object-fit:cover;}
+    .status-pill{padding:.3rem .8rem; border-radius:100px; font-size:.72rem; display:inline-block;}
+    .status-confirmed{background:#E3EEDD; color:#4C6B3C;}
+    .status-pending{background:#F7E9C9; color:#8C6C1F;}
+    .status-planning{background:#E4DAF2; color:#5B4694;}
+
+    .inquiry-item{display:flex; gap:.9rem; padding:.9rem 0; border-bottom:1px solid var(--line); align-items:flex-start;}
+    .inquiry-item:last-child{border-bottom:none;}
+    .inquiry-item img{width:38px; height:38px; border-radius:50%; object-fit:cover;}
+    .inquiry-item b{font-size:.88rem;} .inquiry-item p{font-size:.8rem; margin-top:.15rem;}
+    .inquiry-item small{color:var(--charcoal-fade); font-size:.72rem;}
+
+    .task-list li{display:flex; align-items:center; gap:.8rem; padding:.7rem 0; border-bottom:1px solid var(--line); font-size:.88rem;}
+    .task-list li:last-child{border-bottom:none;}
+    .task-list input{width:16px; height:16px; accent-color:var(--rose);}
+    .task-list li.done span{text-decoration:line-through; color:var(--charcoal-fade);}
+
+    .vendor-row{display:flex; align-items:center; justify-content:space-between; padding:.8rem 0; border-bottom:1px solid var(--line); font-size:.86rem;}
+    .vendor-row:last-child{border-bottom:none;}
+    .bar-mini{width:90px; height:6px; background:var(--ivory-deep); border-radius:10px; overflow:hidden;}
+    .bar-mini span{display:block; height:100%; background:var(--rose);}
+
+    /* ---------- dashboard views (sidebar switching) ---------- */
+    .dash-view{display:none;}
+    .dash-view.active{display:block;}
+
+    .view-toolbar{display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1.4rem;}
+    .view-toolbar .tag-row{display:flex; gap:.6rem; flex-wrap:wrap;}
+    .toolbar-search{display:flex; align-items:center; gap:.6rem; background:var(--paper); border:1px solid var(--line); border-radius:100px; padding:.7rem 1.2rem; min-width:240px;}
+    .toolbar-search input{border:none; background:none; flex:1; outline:none;}
+    .toolbar-search svg{width:16px; height:16px; color:var(--charcoal-fade);}
+
+    /* client cards */
+    .client-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem;}
+    .client-card{background:var(--paper); border:1px solid var(--line); border-radius:22px; padding:1.5rem;}
+    .client-card .cc-top{display:flex; align-items:center; gap:.9rem; margin-bottom:1.1rem;}
+    .client-card .cc-top img{width:48px; height:48px; border-radius:50%; object-fit:cover;}
+    .client-card .cc-top b{font-size:.95rem; display:block;}
+    .client-card .cc-top small{color:var(--charcoal-fade); font-size:.78rem;}
+    .client-card .cc-row{display:flex; justify-content:space-between; font-size:.82rem; padding:.55rem 0; border-top:1px solid var(--line);}
+    .client-card .cc-row span:first-child{color:var(--charcoal-fade);}
+    .client-card .cc-actions{display:flex; gap:.6rem; margin-top:1.1rem;}
+
+    /* vendor cards */
+    .vendor-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem;}
+    .vendor-card{background:var(--paper); border:1px solid var(--line); border-radius:22px; overflow:hidden;}
+    .vendor-card img{width:100%; height:130px; object-fit:cover;}
+    .vendor-card-body{padding:1.3rem;}
+    .vendor-card-body .vc-top{display:flex; justify-content:space-between; align-items:flex-start; gap:.6rem;}
+    .vendor-card-body b{font-size:.95rem;}
+    .vendor-card-body small{color:var(--charcoal-fade); font-size:.78rem; display:block; margin-top:.15rem;}
+    .vendor-rating{font-size:.78rem; color:var(--gold); white-space:nowrap;}
+    .vendor-card-body .bar-mini{width:100%; margin-top:1rem;}
+
+    /* events timeline */
+    .timeline-list{border-left:2px solid var(--line); padding-left:1.6rem; display:flex; flex-direction:column; gap:1.6rem; margin-left:.4rem;}
+    .timeline-item{position:relative;}
+    .timeline-item::before{content:''; position:absolute; left:-2.05rem; top:.3rem; width:12px; height:12px; border-radius:50%; background:var(--rose); border:3px solid var(--ivory-deep);}
+    .timeline-item.done::before{background:var(--sage);}
+    .timeline-item span{font-size:.75rem; color:var(--rose-deep); letter-spacing:.04em;}
+    .timeline-item b{display:block; font-size:1rem; margin:.2rem 0;}
+    .timeline-item p{font-size:.85rem;}
+
+    /* calendar */
+    .cal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;}
+    .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:.5rem;}
+    .cal-dow{text-align:center; font-size:.72rem; letter-spacing:.05em; color:var(--charcoal-fade); padding-bottom:.4rem;}
+    .cal-cell{aspect-ratio:1/.85; border:1px solid var(--line); border-radius:12px; padding:.5rem; font-size:.8rem; color:var(--charcoal-soft); background:var(--paper); position:relative;}
+    .cal-cell.empty{border:none; background:none;}
+    .cal-cell.today{border-color:var(--rose); background:#FBEFF1;}
+    .cal-dot{position:absolute; bottom:.4rem; left:.5rem; right:.5rem; font-size:.62rem; background:var(--rose-pale); color:var(--rose-deep); border-radius:6px; padding:.15rem .35rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+    /* payments */
+    .status-paid{background:#E3EEDD; color:#4C6B3C;}
+    .status-overdue{background:#F6DCDC; color:#A13B3B;}
+
+    /* settings */
+    .settings-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.4rem;}
+    .form-row{margin-bottom:1.2rem;}
+    .form-row label{display:block; font-size:.78rem; letter-spacing:.04em; color:var(--charcoal-fade); margin-bottom:.5rem;}
+    .form-row input, .form-row select{width:100%; border:1px solid var(--line); border-radius:12px; padding:.8rem 1rem; background:var(--ivory); font-size:.9rem;}
+    .toggle-row{display:flex; justify-content:space-between; align-items:center; padding:.9rem 0; border-bottom:1px solid var(--line);}
+    .toggle-row:last-child{border-bottom:none;}
+    .toggle-row b{font-size:.88rem; display:block;}
+    .toggle-row small{color:var(--charcoal-fade); font-size:.78rem;}
+    .switch{width:42px; height:24px; border-radius:20px; background:var(--line); position:relative; flex-shrink:0; transition:background .25s;}
+    .switch::after{content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .25s;}
+    .switch.on{background:var(--rose);}
+    .switch.on::after{transform:translateX(18px);}
+
+    /* ---------- mobile hamburger + off-canvas drawer ---------- */
+    .dash-hamburger{display:none; width:42px; height:42px; border-radius:50%; background:var(--paper); border:1px solid var(--line); align-items:center; justify-content:center; flex-shrink:0; margin-right:.9rem;}
+    .dash-hamburger svg{width:19px; height:19px;}
+    .side-close{display:none;}
+    .side-overlay{display:none; position:fixed; inset:0; background:rgba(36,31,28,.55); z-index:1099; opacity:0; transition:opacity .35s var(--ease);}
+    .side-overlay.open{display:block; opacity:1;}
+    .sidebar-head{display:flex; align-items:center; justify-content:space-between;}
+
+    /* ==========================================================
+       RESPONSIVE FIX: grid/flex children were overflowing their
+       tracks because CSS Grid items default to min-width:auto,
+       which stops them shrinking below their content's natural
+       size. This was causing the horizontal scroll/clipping seen
+       in the stat cards. Applied globally, not just in a
+       media query, since the bug isn't breakpoint-specific.
+       ========================================================== */
+    .stat-grid, .dash-grid, .client-grid, .vendor-grid, .settings-grid,
+    .stat-card, .panel, .client-card, .vendor-card{
+      min-width:0;
+    }
+    .panel{ overflow-x:auto; } /* let wide tables scroll inside the panel instead of blowing out the layout */
+    html, body{ overflow-x:hidden; width:100%; }
+
+    @media(max-width:1100px){
+      .dash-hamburger{display:flex;}
+      .sidebar{
+        width:min(300px,82vw);
+        padding:1.6rem 1.4rem;
+        transform:translateX(-100%);
+        transition:transform .4s var(--ease);
+        z-index:1100;
+      }
+      .sidebar.open{transform:translateX(0);}
+      .sidebar .logo{margin:0;}
+      .side-close{display:flex; width:34px; height:34px; border-radius:50%; align-items:center; justify-content:center; background:rgba(255,255,255,.08); color:var(--ivory); flex-shrink:0;}
+      .side-close svg{width:16px; height:16px;}
+      .side-nav{flex-direction:column; gap:.2rem;}
+      .side-label{display:block;}
+      .side-foot{display:flex;}
+      .stat-grid{grid-template-columns:repeat(2,1fr);}
+      .dash-grid{grid-template-columns:1fr;}
+      .client-grid, .vendor-grid, .settings-grid{grid-template-columns:1fr;}
+      .dash-main{padding:1.6rem; margin-left:0;}
+      .dash-top{align-items:center;}
+      .dash-search{min-width:0; flex:1 1 160px;}
+      .dash-actions{flex-wrap:nowrap; justify-content:flex-end; flex:1 1 200px; min-width:0;}
+    }
+
+    /* NEW: intermediate breakpoint — the old jump straight from a
+       4-col to a 2-col stat grid at 1100px left the 2-col layout
+       squeezed on portrait tablets / narrow laptop windows before
+       640px kicked in. Drop to 1 column earlier. */
+    @media(max-width:760px){
+      .stat-grid{grid-template-columns:1fr;}
+    }
+
+    @media(max-width:640px){
+      .stat-grid{grid-template-columns:1fr;}
+      .cal-cell{font-size:.7rem;}
+      #dash-title{font-size:1.5rem !important;}
+      .toolbar-search{min-width:0;}
+      .view-toolbar{flex-direction:column; align-items:stretch;}
+      /* wide tables (Bookings, Payments) get their own scroll area
+         rather than forcing the whole page to scroll horizontally */
+      table{display:block; overflow-x:auto; white-space:nowrap;}
+    }
+
+</style>
+</head>
+
+<body class="dash-body">
+
+  <div class="preloader"><img src="./stackly.png" alt=""><div class="pl-bar"><div class="pl-fill"></div></div><div class="pl-label">the details, before the day</div></div>
+  <div class="grain"></div>
+  <div class="bg-blobs"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+
+<div class="side-overlay" id="side-overlay"></div>
+
+<div class="dash-wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <a href="index.html" class="logo"><img src="./stackly.png" alt="Stackly"></a>
+      <button class="side-close" id="side-close" aria-label="Close menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="side-foot"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Kavitha Rao</b><small>Lead Planner</small><small class="side-email">kavitha@stacklyweddings.com</small></div></div>
+    <nav class="side-nav">
+      <a href="javascript:void(0)" class="active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+      <a href="javascript:void(0)" data-view="bookings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>Bookings</a>
+      <a href="javascript:void(0)" data-view="clients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><circle cx="17.5" cy="8.5" r="2.5"/><path d="M22 19.5c0-2.7-2-4.7-4.5-5.2"/></svg>Clients</a>
+      <a href="javascript:void(0)" data-view="vendors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>Vendors</a>
+      <a href="javascript:void(0)" data-view="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-9.5-9C.7 8 2.4 4 6.5 4c2 0 3.6 1.2 4.5 2.7C11.9 5.2 13.5 4 15.5 4 19.6 4 21.3 8 19.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>Events</a>
+      <a href="javascript:void(0)" data-view="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Calendar</a>
+      <a href="javascript:void(0)" data-view="payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Payments</a>
+      <a href="javascript:void(0)" data-view="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>Reports</a>
+      <div class="side-label">SYSTEM</div>
+      <a href="javascript:void(0)" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
+      <a href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Log out</a>
+    </nav>
+    
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-top">
+      <div style="display:flex; align-items:center;">
+        <button class="dash-hamburger" id="dash-hamburger" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+        <div><p class="eyebrow">Overview</p><h2 id="dash-title" style="font-size:1.9rem; margin-top:.4rem;">Wedding Admin</h2></div>
+      </div>
+      <div class="dash-actions">
+        <!-- <div class="dash-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" placeholder="Search bookings, clients, vendors..."></div> -->
+        <button class="icon-btn"><span class="dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></button>
+        <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=100&q=80" alt="" style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
+      </div>
+    </div>
+
+    <!-- ===== VIEW: DASHBOARD ===== -->
+    <div class="dash-view active" id="view-dashboard">
+    <div class="stat-grid reveal-stagger">
+      <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#F7E9EC;"><svg viewBox="0 0 24 24" fill="none" stroke="#8C4A5B" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></div></div><div class="num counter" data-count="128">0</div><div class="lbl">Active bookings</div><span class="delta">&#8593; 12% this quarter</span></div>
+      <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#EFE7D6;"><svg viewBox="0 0 24 24" fill="none" stroke="#8C6C1F" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="num counter" data-count="42" data-suffix="L">0</div><div class="lbl">Revenue (&#8377;, this year)</div><span class="delta">&#8593; 8% vs last year</span></div>
+      <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#E3EEDD;"><svg viewBox="0 0 24 24" fill="none" stroke="#4C6B3C" stroke-width="1.8"><path d="M12 21s-7-4.5-9.5-9C.7 8 2.4 4 6.5 4c2 0 3.6 1.2 4.5 2.7C11.9 5.2 13.5 4 15.5 4 19.6 4 21.3 8 19.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg></div></div><div class="num counter" data-count="19">0</div><div class="lbl">Events this month</div><span class="delta">5 this week</span></div>
+      <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#E4DAF2;"><svg viewBox="0 0 24 24" fill="none" stroke="#5B4694" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div></div><div class="num counter" data-count="27">0</div><div class="lbl">New inquiries</div><span class="delta">6 need reply</span></div>
+    </div>
+
+    <div class="dash-grid reveal-stagger">
+      <div class="panel">
+        <div class="panel-head"><h3>Revenue, last 6 months</h3><a href="#">Export &rarr;</a></div>
+        <div class="chart-bars" id="revChart">
+          <div class="bar" data-h="52%"><span>Apr</span></div>
+          <div class="bar" data-h="68%"><span>May</span></div>
+          <div class="bar" data-h="45%"><span>Jun</span></div>
+          <div class="bar" data-h="80%"><span>Jul</span></div>
+          <div class="bar" data-h="63%"><span>Aug</span></div>
+          <div class="bar" data-h="94%"><span>Sep</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Recent inquiries</h3><a href="#">View all &rarr;</a></div>
+        <div class="inquiry-item"><img src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Faiza &amp; Imran</b><p>Interested in Signature package, Dec 2026</p><small>2 hours ago</small></div></div>
+        <div class="inquiry-item"><img src="https://images.unsplash.com/photo-1487700160041-babef9c3cb55?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Aarthi &amp; Naveen</b><p>Asked about Coorg destination pricing</p><small>5 hours ago</small></div></div>
+        <div class="inquiry-item"><img src="https://images.unsplash.com/photo-1470019693664-1d202d2c0907?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Sanjana &amp; Vikram</b><p>Requested a call for décor consultation</p><small>Yesterday</small></div></div>
+      </div>
+    </div>
+
+    <div class="dash-grid reveal-stagger" style="grid-template-columns:1.6fr 1fr;">
+      <div class="panel">
+        <div class="panel-head"><h3>Upcoming events</h3><a href="#">Full calendar &rarr;</a></div>
+        <table>
+          <thead><tr><th>Couple</th><th>Date</th><th>Venue</th><th>Package</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=100&q=80" alt="">Faiza &amp; Imran</div></td><td>12 Dec 2026</td><td>Fisherman's Cove</td><td>Signature</td><td><span class="status-pill status-confirmed">Confirmed</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1487700160041-babef9c3cb55?auto=format&fit=crop&w=100&q=80" alt="">Aarthi &amp; Naveen</div></td><td>21 Nov 2026</td><td>Coorg Estate</td><td>Bespoke</td><td><span class="status-pill status-planning">Planning</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1470019693664-1d202d2c0907?auto=format&fit=crop&w=100&q=80" alt="">Sanjana &amp; Vikram</div></td><td>04 Oct 2026</td><td>Taj Coromandel</td><td>Signature</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=100&q=80" alt="">Ritu &amp; Sameer</div></td><td>19 Oct 2026</td><td>ITC Grand Chola</td><td>Essential</td><td><span class="status-pill status-confirmed">Confirmed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Vendor performance</h3></div>
+        <div class="vendor-row"><span>Bloom &amp; Co. Florists</span><div class="bar-mini"><span style="width:92%;"></span></div></div>
+        <div class="vendor-row"><span>Spice Route Catering</span><div class="bar-mini"><span style="width:87%;"></span></div></div>
+        <div class="vendor-row"><span>Frame &amp; Light Studio</span><div class="bar-mini"><span style="width:95%;"></span></div></div>
+        <div class="vendor-row"><span>Rhythm Entertainment</span><div class="bar-mini"><span style="width:78%;"></span></div></div>
+        <div class="panel-head" style="margin-top:1.6rem;"><h3>Today's tasks</h3></div>
+        <ul class="task-list">
+          <li class="done"><input type="checkbox" checked><span>Confirm florist for Faiza &amp; Imran</span></li>
+          <li><input type="checkbox"><span>Send contract to Ritu &amp; Sameer</span></li>
+          <li><input type="checkbox"><span>Site visit &mdash; Coorg Estate</span></li>
+          <li><input type="checkbox"><span>Reply to 6 new inquiries</span></li>
+        </ul>
+      </div>
+    </div>
+    </div>
+    <!-- ===== /VIEW: DASHBOARD ===== -->
+
+    <!-- ===== VIEW: BOOKINGS ===== -->
+    <div class="dash-view" id="view-bookings">
+      <div class="view-toolbar">
+        <div class="tag-row">
+          <span class="tag-chip active">All (128)</span>
+          <span class="tag-chip">Confirmed</span>
+          <span class="tag-chip">Planning</span>
+          <span class="tag-chip">Pending</span>
+        </div>
+        <button class="btn btn-primary btn-sm magnetic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>New booking</button>
+      </div>
+      <div class="panel reveal">
+        <table>
+          <thead><tr><th>Couple</th><th>Date</th><th>Venue</th><th>Package</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=100&q=80" alt="">Faiza &amp; Imran</div></td><td>12 Dec 2026</td><td>Fisherman's Cove</td><td>Signature</td><td>&#8377;9.4L</td><td><span class="status-pill status-confirmed">Confirmed</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1487700160041-babef9c3cb55?auto=format&fit=crop&w=100&q=80" alt="">Aarthi &amp; Naveen</div></td><td>21 Nov 2026</td><td>Coorg Estate</td><td>Bespoke</td><td>&#8377;14.2L</td><td><span class="status-pill status-planning">Planning</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1470019693664-1d202d2c0907?auto=format&fit=crop&w=100&q=80" alt="">Sanjana &amp; Vikram</div></td><td>04 Oct 2026</td><td>Taj Coromandel</td><td>Signature</td><td>&#8377;8.1L</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=100&q=80" alt="">Ritu &amp; Sameer</div></td><td>19 Oct 2026</td><td>ITC Grand Chola</td><td>Essential</td><td>&#8377;5.6L</td><td><span class="status-pill status-confirmed">Confirmed</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1525258785179-eab588ba4d18?auto=format&fit=crop&w=100&q=80" alt="">Divya &amp; Karthik</div></td><td>28 Jan 2027</td><td>ECR Beach</td><td>Signature</td><td>&#8377;10.8L</td><td><span class="status-pill status-planning">Planning</span></td></tr>
+            <tr><td><div class="td-couple"><img src="https://images.unsplash.com/photo-1521310192545-4ac7951413f0?auto=format&fit=crop&w=100&q=80" alt="">Nisha &amp; Arvind</div></td><td>14 Feb 2027</td><td>Leela Palace</td><td>Bespoke</td><td>&#8377;16.5L</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: CLIENTS ===== -->
+    <div class="dash-view" id="view-clients">
+      <div class="view-toolbar">
+        <div class="toolbar-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" placeholder="Search clients..."></div>
+        <button class="btn btn-primary btn-sm magnetic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>Add client</button>
+      </div>
+      <div class="client-grid reveal-stagger">
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Faiza &amp; Imran</b><small>Signature package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>12 Dec 2026</span></div>
+          <div class="cc-row"><span>Venue</span><span>Fisherman's Cove</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;2.1L</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1487700160041-babef9c3cb55?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Aarthi &amp; Naveen</b><small>Bespoke package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>21 Nov 2026</span></div>
+          <div class="cc-row"><span>Venue</span><span>Coorg Estate</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;6.4L</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1470019693664-1d202d2c0907?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Sanjana &amp; Vikram</b><small>Signature package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>04 Oct 2026</span></div>
+          <div class="cc-row"><span>Venue</span><span>Taj Coromandel</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;8.1L</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Ritu &amp; Sameer</b><small>Essential package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>19 Oct 2026</span></div>
+          <div class="cc-row"><span>Venue</span><span>ITC Grand Chola</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;0 &mdash; Paid</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1525258785179-eab588ba4d18?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Divya &amp; Karthik</b><small>Signature package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>28 Jan 2027</span></div>
+          <div class="cc-row"><span>Venue</span><span>ECR Beach</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;10.8L</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+        <div class="client-card">
+          <div class="cc-top"><img src="https://images.unsplash.com/photo-1521310192545-4ac7951413f0?auto=format&fit=crop&w=100&q=80" alt=""><div><b>Nisha &amp; Arvind</b><small>Bespoke package</small></div></div>
+          <div class="cc-row"><span>Wedding date</span><span>14 Feb 2027</span></div>
+          <div class="cc-row"><span>Venue</span><span>Leela Palace</span></div>
+          <div class="cc-row"><span>Balance due</span><span>&#8377;16.5L</span></div>
+          <div class="cc-actions"><button class="btn btn-outline btn-sm">Message</button><button class="btn btn-outline btn-sm">View</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: VENDORS ===== -->
+    <div class="dash-view" id="view-vendors">
+      <div class="view-toolbar">
+        <div class="tag-row">
+          <span class="tag-chip active">All</span>
+          <span class="tag-chip">Florists</span>
+          <span class="tag-chip">Catering</span>
+          <span class="tag-chip">Photography</span>
+          <span class="tag-chip">Entertainment</span>
+        </div>
+        <button class="btn btn-primary btn-sm magnetic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>Add vendor</button>
+      </div>
+      <div class="vendor-grid reveal-stagger">
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Bloom &amp; Co. Florists</b><small>Florals &amp; d&eacute;cor</small></div><span class="vendor-rating">&#9733; 4.8</span></div>
+            <div class="bar-mini"><span style="width:92%;"></span></div>
+          </div>
+        </div>
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Spice Route Catering</b><small>Catering</small></div><span class="vendor-rating">&#9733; 4.6</span></div>
+            <div class="bar-mini"><span style="width:87%;"></span></div>
+          </div>
+        </div>
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Frame &amp; Light Studio</b><small>Photography</small></div><span class="vendor-rating">&#9733; 4.9</span></div>
+            <div class="bar-mini"><span style="width:95%;"></span></div>
+          </div>
+        </div>
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Rhythm Entertainment</b><small>DJ &amp; live music</small></div><span class="vendor-rating">&#9733; 4.5</span></div>
+            <div class="bar-mini"><span style="width:78%;"></span></div>
+          </div>
+        </div>
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1478146059778-26028b07395a?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Coastal Tents Co.</b><small>Venue &amp; d&eacute;cor</small></div><span class="vendor-rating">&#9733; 4.7</span></div>
+            <div class="bar-mini"><span style="width:83%;"></span></div>
+          </div>
+        </div>
+        <div class="vendor-card">
+          <img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=500&q=80" alt="">
+          <div class="vendor-card-body">
+            <div class="vc-top"><div><b>Sugar &amp; Spice Bakes</b><small>Wedding cakes</small></div><span class="vendor-rating">&#9733; 4.8</span></div>
+            <div class="bar-mini"><span style="width:90%;"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: EVENTS ===== -->
+    <div class="dash-view" id="view-events">
+      <div class="panel reveal">
+        <div class="panel-head"><h3>Upcoming &amp; past events</h3><a href="javascript:void(0)" data-view-link="calendar">Full calendar &rarr;</a></div>
+        <div class="timeline-list">
+          <div class="timeline-item"><span>04 OCT 2026</span><b>Sanjana &amp; Vikram &mdash; Taj Coromandel</b><p>Signature package. Final headcount and menu tasting still pending confirmation.</p></div>
+          <div class="timeline-item"><span>19 OCT 2026</span><b>Ritu &amp; Sameer &mdash; ITC Grand Chola</b><p>Essential package. Contract signed, vendors confirmed, payment complete.</p></div>
+          <div class="timeline-item"><span>21 NOV 2026</span><b>Aarthi &amp; Naveen &mdash; Coorg Estate</b><p>Bespoke destination wedding. Site visit scheduled this week.</p></div>
+          <div class="timeline-item"><span>12 DEC 2026</span><b>Faiza &amp; Imran &mdash; Fisherman's Cove</b><p>Signature package. Florist confirmed, décor mock-up in progress.</p></div>
+          <div class="timeline-item"><span>28 JAN 2027</span><b>Divya &amp; Karthik &mdash; ECR Beach</b><p>Signature package. Awaiting vendor shortlist approval from couple.</p></div>
+          <div class="timeline-item done"><span>14 SEP 2025</span><b>Meena &amp; Rohan &mdash; ITC Grand Chola</b><p>Completed. Signature package, 340 guests, 4.9&#9733; feedback.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: CALENDAR ===== -->
+    <div class="dash-view" id="view-calendar">
+      <div class="panel reveal">
+        <div class="cal-head"><h3>September 2026</h3><div style="display:flex; gap:.6rem;"><button class="btn btn-outline btn-sm">&larr; Aug</button><button class="btn btn-outline btn-sm">Oct &rarr;</button></div></div>
+        <div class="cal-grid">
+          <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+          <div class="cal-cell empty"></div><div class="cal-cell empty"></div>
+          <div class="cal-cell">1</div><div class="cal-cell">2</div>
+          <div class="cal-cell today">2<div class="cal-dot">Today</div></div>
+          <div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div>
+          <div class="cal-cell">6</div><div class="cal-cell">7</div><div class="cal-cell">8</div><div class="cal-cell">9</div>
+          <div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell">12</div>
+          <div class="cal-cell">13</div><div class="cal-cell">14</div><div class="cal-cell">15</div><div class="cal-cell">16</div>
+          <div class="cal-cell">17</div><div class="cal-cell">18</div><div class="cal-cell">19</div>
+          <div class="cal-cell">20</div><div class="cal-cell">21</div><div class="cal-cell">22</div><div class="cal-cell">23</div>
+          <div class="cal-cell">24</div><div class="cal-cell">25</div><div class="cal-cell">26</div>
+          <div class="cal-cell">27</div><div class="cal-cell">28</div><div class="cal-cell">29</div><div class="cal-cell">30</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: PAYMENTS ===== -->
+    <div class="dash-view" id="view-payments">
+      <div class="stat-grid reveal-stagger" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#E3EEDD;"><svg viewBox="0 0 24 24" fill="none" stroke="#4C6B3C" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg></div></div><div class="num counter" data-count="36" data-suffix="L">0</div><div class="lbl">Collected this quarter</div></div>
+        <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#F7E9C9;"><svg viewBox="0 0 24 24" fill="none" stroke="#8C6C1F" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div><div class="num counter" data-count="8" data-suffix="L">0</div><div class="lbl">Pending invoices</div></div>
+        <div class="stat-card"><div class="st-top"><div class="st-icon" style="background:#F6DCDC;"><svg viewBox="0 0 24 24" fill="none" stroke="#A13B3B" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div></div><div class="num counter" data-count="2" data-suffix="L">0</div><div class="lbl">Overdue</div></div>
+      </div>
+      <div class="panel reveal">
+        <div class="panel-head"><h3>Invoices</h3><a href="#">Export &rarr;</a></div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Couple</th><th>Due date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-2026-041</td><td>Faiza &amp; Imran</td><td>15 Sep 2026</td><td>&#8377;2.1L</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td>INV-2026-038</td><td>Aarthi &amp; Naveen</td><td>28 Aug 2026</td><td>&#8377;3.2L</td><td><span class="status-pill status-overdue">Overdue</span></td></tr>
+            <tr><td>INV-2026-035</td><td>Sanjana &amp; Vikram</td><td>10 Sep 2026</td><td>&#8377;4.0L</td><td><span class="status-pill status-pending">Pending</span></td></tr>
+            <tr><td>INV-2026-030</td><td>Ritu &amp; Sameer</td><td>02 Aug 2026</td><td>&#8377;5.6L</td><td><span class="status-pill status-paid">Paid</span></td></tr>
+            <tr><td>INV-2026-027</td><td>Divya &amp; Karthik</td><td>20 Jul 2026</td><td>&#8377;3.6L</td><td><span class="status-pill status-paid">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: REPORTS ===== -->
+    <div class="dash-view" id="view-reports">
+      <div class="view-toolbar">
+        <div class="tag-row">
+          <span class="tag-chip active">Last 6 months</span>
+          <span class="tag-chip">This year</span>
+          <span class="tag-chip">All time</span>
+        </div>
+        <button class="btn btn-outline btn-sm magnetic">Export CSV</button>
+      </div>
+      <div class="dash-grid reveal-stagger">
+        <div class="panel">
+          <div class="panel-head"><h3>Revenue by month</h3></div>
+          <div class="chart-bars" id="repChart">
+            <div class="bar" data-h="52%"><span>Apr</span></div>
+            <div class="bar" data-h="68%"><span>May</span></div>
+            <div class="bar" data-h="45%"><span>Jun</span></div>
+            <div class="bar" data-h="80%"><span>Jul</span></div>
+            <div class="bar" data-h="63%"><span>Aug</span></div>
+            <div class="bar" data-h="94%"><span>Sep</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Bookings by package</h3></div>
+          <div class="vendor-row"><span>Signature</span><div class="bar-mini"><span style="width:58%;"></span></div></div>
+          <div class="vendor-row"><span>Bespoke</span><div class="bar-mini"><span style="width:27%;"></span></div></div>
+          <div class="vendor-row"><span>Essential</span><div class="bar-mini"><span style="width:15%;"></span></div></div>
+        </div>
+      </div>
+      <div class="panel reveal">
+        <div class="panel-head"><h3>Top-performing vendors</h3></div>
+        <div class="vendor-row"><span>Frame &amp; Light Studio</span><div class="bar-mini"><span style="width:95%;"></span></div></div>
+        <div class="vendor-row"><span>Bloom &amp; Co. Florists</span><div class="bar-mini"><span style="width:92%;"></span></div></div>
+        <div class="vendor-row"><span>Sugar &amp; Spice Bakes</span><div class="bar-mini"><span style="width:90%;"></span></div></div>
+        <div class="vendor-row"><span>Spice Route Catering</span><div class="bar-mini"><span style="width:87%;"></span></div></div>
+      </div>
+    </div>
+
+    <!-- ===== VIEW: SETTINGS ===== -->
+    <div class="dash-view" id="view-settings">
+      <div class="settings-grid">
+        <div class="panel reveal">
+          <div class="panel-head"><h3>Profile</h3></div>
+          <div class="form-row"><label>Full name</label><input type="text" value="Kavitha Rao"></div>
+          <div class="form-row"><label>Role</label><input type="text" value="Lead Planner"></div>
+          <div class="form-row"><label>Email</label><input type="text" value="kavitha@stacklyweddings.com"></div>
+          <div class="form-row"><label>Phone</label><input type="text" value="+91 98400 12345"></div>
+          <button class="btn btn-primary btn-sm magnetic">Save changes</button>
+        </div>
+        <div class="panel reveal">
+          <div class="panel-head"><h3>Notifications</h3></div>
+          <div class="toggle-row"><div><b>New inquiries</b><small>Email me when a couple submits an inquiry</small></div><div class="switch on"></div></div>
+          <div class="toggle-row"><div><b>Payment received</b><small>Notify on invoice payments</small></div><div class="switch on"></div></div>
+          <div class="toggle-row"><div><b>Vendor updates</b><small>Changes to vendor availability or pricing</small></div><div class="switch"></div></div>
+          <div class="toggle-row"><div><b>Weekly summary</b><small>A digest every Monday morning</small></div><div class="switch on"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+    // preloader
+    window.addEventListener('load', () => {
+      const fill = document.querySelector('.pl-fill');
+      const pre = document.querySelector('.preloader');
+      let p = {v:0};
+      gsap.to(p,{v:100,duration:1.4,ease:'power2.inOut',onUpdate:()=>{ if(fill) fill.style.width=p.v+'%';}, onComplete:()=>{
+        gsap.to(pre,{yPercent:-100,duration:1,ease:'power4.inOut',delay:.15,onComplete:()=>{pre.style.display='none'; document.body.classList.add('loaded'); initHero();}});
+      }});
+    });
+
+    // magnetic buttons
+    document.querySelectorAll('.magnetic').forEach(btn=>{
+      btn.addEventListener('mousemove', e=>{
+        const r=btn.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+        gsap.to(btn,{x:x*.35,y:y*.35,duration:.5,ease:'power3.out'});
+      });
+      btn.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}));
+    });
+
+    // nav scroll state
+    const nav=document.querySelector('header.site-nav');
+    ScrollTrigger.create({start:60,end:99999,onUpdate:self=>{ nav.classList.toggle('scrolled', self.scroll()>60); }});
+
+    // mobile menu
+    const toggle=document.querySelector('.nav-toggle'), panel=document.querySelector('.mobile-panel');
+    if(toggle){ toggle.addEventListener('click',()=>{
+      panel.classList.toggle('open');
+      toggle.classList.toggle('open');
+      gsap.to(toggle.children[0],{rotate:panel.classList.contains('open')?45:0, y:panel.classList.contains('open')?6:0,duration:.35});
+      gsap.to(toggle.children[1],{opacity:panel.classList.contains('open')?0:1,duration:.2});
+      gsap.to(toggle.children[2],{rotate:panel.classList.contains('open')?-45:0, y:panel.classList.contains('open')?-6:0,duration:.35});
+    });
+    panel.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{panel.classList.remove('open'); toggle.classList.remove('open');}));
+    }
+
+    // floating petals in background
+    (function petals(){
+      const wrap=document.querySelector('.bg-blobs');
+      if(!wrap) return;
+      for(let i=0;i<7;i++){
+        const p=document.createElement('div');
+        p.className='petal';
+        p.innerHTML='<svg width="'+(14+Math.random()*14)+'" height="'+(14+Math.random()*14)+'" viewBox="0 0 20 20"><path d="M10 0C13 5 20 7 10 20C0 7 7 5 10 0Z" fill="'+(i%2?'#B8697A':'#C6A15B')+'"/></svg>';
+        p.style.left=(Math.random()*96)+'vw';
+        p.style.top=(Math.random()*100)+'vh';
+        p.style.opacity=.25+Math.random()*.3;
+        document.body.appendChild(p);
+        gsap.to(p,{y:'+=120',x:'+='+(Math.random()>.5?60:-60),rotate:360,duration:14+Math.random()*10,repeat:-1,yoyo:true,ease:'sine.inOut'});
+      }
+    })();
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function splitChars(el){
+      const text=el.textContent;
+      el.innerHTML='';
+      text.split('').forEach(ch=>{
+        const s=document.createElement('span');
+        s.textContent=ch===' '?'\u00A0':ch;
+        s.style.display='inline-block';
+        s.style.willChange='transform';
+        el.appendChild(s);
+      });
+      return el.children;
+    }
+    function initHero(){
+      document.querySelectorAll('.split-title').forEach(el=>{
+        const chars=splitChars(el);
+        gsap.from(chars,{yPercent:130,opacity:0,duration:1,stagger:.018,ease:'power4.out',delay:.1});
+      });
+      gsap.from('.hero-fade',{y:26,opacity:0,duration:1,stagger:.12,delay:.5,ease:'power3.out'});
+      gsap.from('.hero-arch img',{scale:1.35,duration:1.6,ease:'power3.out',delay:.2});
+      gsap.from('.hero-arch',{clipPath:'inset(0 0 100% 0)',duration:1.3,ease:'power4.inOut',delay:.15});
+    }
+
+    // generic scroll reveals
+    gsap.utils.toArray('.reveal').forEach(el=>{
+      gsap.to(el,{opacity:1,y:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});
+    });
+    gsap.utils.toArray('.reveal-img').forEach(el=>{
+      gsap.to(el,{clipPath:'inset(0 0 0% 0)',duration:1.2,ease:'power4.inOut',scrollTrigger:{trigger:el,start:'top 85%'}});
+      const img=el.querySelector('img');
+      if(img){ gsap.fromTo(img,{scale:1.25},{scale:1,duration:1.6,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}}); }
+    });
+    gsap.utils.toArray('.reveal-stagger').forEach(group=>{
+      gsap.to(group.children,{opacity:1,y:0,duration:.9,stagger:.12,ease:'power3.out',scrollTrigger:{trigger:group,start:'top 85%'}});
+    });
+    // parallax images
+    gsap.utils.toArray('.parallax-img').forEach(img=>{
+      gsap.to(img,{yPercent:-14,ease:'none',scrollTrigger:{trigger:img,start:'top bottom',end:'bottom top',scrub:true}});
+    });
+    // counters
+    gsap.utils.toArray('.counter').forEach(el=>{
+      const end=+el.dataset.count;
+      let obj={v:0};
+      ScrollTrigger.create({trigger:el,start:'top 90%',once:true,onEnter:()=>{
+        gsap.to(obj,{v:end,duration:2,ease:'power2.out',onUpdate:()=>{el.textContent=Math.floor(obj.v).toLocaleString()+(el.dataset.suffix||'');}});
+      }});
+    });
+    // section eyebrow/heading fade
+    gsap.utils.toArray('.section-head').forEach(sh=>{
+      gsap.from(sh.children,{y:24,opacity:0,duration:.9,stagger:.1,ease:'power3.out',scrollTrigger:{trigger:sh,start:'top 88%'}});
+    });
+</script>
+<script>
+document.querySelectorAll('.chart-bars .bar').forEach(bar=>{
+  ScrollTrigger.create({trigger:bar, start:'top 95%', once:true, onEnter:()=>{ gsap.to(bar,{height:bar.dataset.h, duration:1.2, ease:'power3.out'}); }});
+});
+document.querySelectorAll('.task-list input').forEach(cb=>{
+  cb.addEventListener('change', ()=> cb.closest('li').classList.toggle('done', cb.checked));
+});
+document.querySelectorAll('.switch').forEach(sw=>{
+  sw.addEventListener('click', ()=> sw.classList.toggle('on'));
+});
+document.querySelectorAll('.tag-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    chip.parentElement.querySelectorAll('.tag-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+/* ---------- mobile off-canvas drawer ---------- */
+(function(){
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('side-overlay');
+  const openBtn = document.getElementById('dash-hamburger');
+  const closeBtn = document.getElementById('side-close');
+  if(!sidebar || !overlay || !openBtn) return;
+
+  function openDrawer(){
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer(){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  openBtn.addEventListener('click', openDrawer);
+  if(closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  window.__closeMobileDrawer = closeDrawer;
+})();
+
+/* ---------- populate logged-in user info ---------- */
+(function(){
+  const email = localStorage.getItem('stacklyUserEmail');
+  const emailEl = document.querySelector('.side-email');
+  const nameEl = document.querySelector('.side-foot b');
+  function usernameFromEmail(addr){
+    const prefix = addr.split('@')[0];
+    return prefix.split(/[.\-_]+/).filter(Boolean)
+      .map(w=> w.charAt(0).toUpperCase()+w.slice(1))
+      .join(' ');
+  }
+  const username = email ? usernameFromEmail(email) : null;
+  const settingsEmailInput = document.querySelector('#view-settings input[type="text"][value*="@"]');
+  const settingsNameInput = document.querySelector('#view-settings .form-row input[type="text"]');
+  if(emailEl && email) emailEl.textContent = email;
+  if(nameEl && username) nameEl.textContent = username;
+  if(settingsEmailInput && email) settingsEmailInput.value = email;
+  if(settingsNameInput && username) settingsNameInput.value = username;
+})();
+
+/* ---------- sidebar view switcher ---------- */
+(function(){
+  const navLinks = document.querySelectorAll('.side-nav a[data-view]');
+  const views = document.querySelectorAll('.dash-view');
+  const dashTitle = document.getElementById('dash-title');
+  const titles = {
+    dashboard:'Good morning, Kavitha',
+    bookings:'Bookings',
+    clients:'Clients',
+    vendors:'Vendors',
+    events:'Events',
+    calendar:'Calendar',
+    payments:'Payments',
+    reports:'Reports',
+    settings:'Settings'
+  };
+
+  function playReveals(container){
+    gsap.utils.toArray(container.querySelectorAll('.reveal')).forEach(el=>{
+      gsap.fromTo(el,{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power3.out'});
+    });
+    gsap.utils.toArray(container.querySelectorAll('.reveal-stagger')).forEach(group=>{
+      gsap.fromTo(group.children,{opacity:0,y:24},{opacity:1,y:0,duration:.7,stagger:.1,ease:'power3.out'});
+    });
+    container.querySelectorAll('.chart-bars .bar').forEach(bar=>{
+      gsap.fromTo(bar,{height:0},{height:bar.dataset.h,duration:1,ease:'power3.out',delay:.2});
+    });
+  }
+
+  function switchView(view){
+    if(!view || !titles.hasOwnProperty(view)) return;
+    navLinks.forEach(l=> l.classList.toggle('active', l.dataset.view === view));
+    views.forEach(v=> v.classList.toggle('active', v.id === 'view-'+view));
+    if(dashTitle) dashTitle.textContent = titles[view];
+    const activeView = document.getElementById('view-'+view);
+    if(activeView) playReveals(activeView);
+    window.scrollTo({top:0, behavior:'smooth'});
+    if(typeof window.__closeMobileDrawer === 'function') window.__closeMobileDrawer();
+  }
+
+  navLinks.forEach(link=>{
+    link.addEventListener('click', e=>{
+      e.preventDefault();
+      switchView(link.dataset.view);
+    });
+  });
+
+  document.querySelectorAll('[data-view-link]').forEach(link=>{
+    link.addEventListener('click', e=>{
+      e.preventDefault();
+      switchView(link.dataset.viewLink);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found — Wedding Planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF5EF; --ivory-deep:#F2E7D8; --paper:#FFFDFB;
+    --charcoal:#241F1C; --charcoal-soft:#4A423C; --charcoal-fade:#8A8078;
+    --rose:#B8697A; --rose-deep:#8C4A5B; --rose-pale:#E9CED4;
+    --gold:#C6A15B; --gold-pale:#E7D6AE; --sage:#7C8A6E;
+    --line:#E4D6C4;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(120% 90% at 50% -10%, var(--ivory-deep) 0%, var(--ivory) 55%);
+    color:var(--charcoal);
+    font-family:'Jost', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:6vh 6vw;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .page{
+    width:100%;
+    max-width:600px;
+    text-align:center;
+    animation:rise 900ms cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .page{ animation:none; }
+  }
+
+  .sprig{
+    width:120px;
+    height:auto;
+    margin:0 auto 2.2rem;
+    display:block;
+    color:var(--gold);
+  }
+
+  .kicker{
+    font-family:'Jost', sans-serif;
+    font-size:0.82rem;
+    letter-spacing:0.12em;
+    color:var(--rose-deep);
+    margin-bottom:1.1rem;
+  }
+
+  .numeral{
+    font-family:'Fraunces', serif;
+    font-weight:300;
+    font-style:italic;
+    font-size:clamp(6rem, 22vw, 10.5rem);
+    line-height:0.9;
+    color:var(--charcoal);
+    letter-spacing:-0.02em;
+  }
+
+  .numeral em{
+    font-style:normal;
+    color:var(--rose);
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:400;
+    font-size:clamp(1.6rem, 4vw, 2.15rem);
+    line-height:1.25;
+    color:var(--charcoal);
+    margin:1.4rem 0 0.9rem;
+  }
+
+  p.lede{
+    font-size:1.02rem;
+    line-height:1.7;
+    color:var(--charcoal-soft);
+    max-width:420px;
+    margin:0 auto 2.6rem;
+  }
+
+  .divider{
+    width:46px;
+    height:1px;
+    background:var(--gold);
+    margin:0 auto 2.2rem;
+  }
+
+  .actions{
+    display:flex;
+    gap:0.9rem;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    font-family:'Jost', sans-serif;
+    font-size:0.95rem;
+    padding:0.95rem 2.1rem;
+    border-radius:2px;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:0.55rem;
+    transition:background 220ms ease, color 220ms ease, border-color 220ms ease, transform 220ms ease;
+    border:1px solid transparent;
+  }
+
+  .btn:focus-visible{
+    outline:2px solid var(--rose-deep);
+    outline-offset:3px;
+  }
+
+  .btn-primary{
+    background:var(--rose-deep);
+    color:var(--paper);
+    border-color:var(--rose-deep);
+  }
+  .btn-primary:hover{
+    background:var(--rose);
+    border-color:var(--rose);
+    transform:translateY(-1px);
+  }
+
+  .btn-ghost{
+    background:transparent;
+    color:var(--charcoal-soft);
+    border-color:var(--line);
+  }
+  .btn-ghost:hover{
+    border-color:var(--charcoal-fade);
+    color:var(--charcoal);
+    transform:translateY(-1px);
+  }
+
+  .btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .footnote{
+    margin-top:3rem;
+    font-size:0.8rem;
+    color:var(--charcoal-fade);
+    letter-spacing:0.03em;
+  }
+
+  @media (max-width:420px){
+    .actions{ flex-direction:column; }
+    .btn{ justify-content:center; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <svg class="sprig" viewBox="0 0 140 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M70 30 C 40 10, 15 10, 4 30" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    <path d="M70 30 C 100 10, 125 10, 136 30" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    <ellipse cx="18" cy="24" rx="6" ry="2.6" transform="rotate(-28 18 24)" fill="currentColor" opacity="0.75"/>
+    <ellipse cx="32" cy="16" rx="6" ry="2.6" transform="rotate(-14 32 16)" fill="currentColor" opacity="0.6"/>
+    <ellipse cx="122" cy="24" rx="6" ry="2.6" transform="rotate(28 122 24)" fill="currentColor" opacity="0.75"/>
+    <ellipse cx="108" cy="16" rx="6" ry="2.6" transform="rotate(14 108 16)" fill="currentColor" opacity="0.6"/>
+    <circle cx="70" cy="34" r="3" fill="currentColor"/>
+  </svg>
+
+  <p class="kicker">Page Not Found</p>
+
+  <p class="numeral">4<em>0</em>4</p>
+
+  <h1>This page never made it down the aisle.</h1>
+  <p class="lede">
+    The link you followed has wandered off somewhere between the invitation
+    and the venue. Let's get you back to the celebration.
+  </p>
+
+  <div class="divider"></div>
+
+  <div class="actions">
+    <a href="#" class="btn btn-ghost" onclick="history.back(); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      Go Back
+    </a>
+    <a href="/" class="btn btn-primary">
+      Return to Home
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <p class="footnote">Every love story has a few missed turns.</p>
+
+</main>
+
+</body>
+</html>
